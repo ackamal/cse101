@@ -2,6 +2,9 @@
 # Thresholding and Multiplication Algorithms
 import pprint
 from bitstring import BitArray
+from timeit import default_timer as timer
+import random
+import matplotlib
 
 
 
@@ -55,7 +58,6 @@ def binary_multiply(bit_array_1, bit_array_2):
     while(len(return_list) > 1 and return_list[0] == 0):
         return_list.pop(0)
 
-    pprint.pprint(return_list)
     return return_list
 
 # Helper addition function for adding two
@@ -125,6 +127,7 @@ def create_bit_array(input_data, bits, signed=False):
     return BitArray(int=input_data, length=bits)
 
 class Multipliers(object):
+
 
     """
     This class implements various types of mulipliers using different algorithms used in study, analysis
@@ -242,7 +245,78 @@ def shift_left(bit_array_1, num_places):
 arr1 = [int(i) for i in create_bit_array(5, 4).bin]
 arr2 = [int(i) for i in create_bit_array(3, 4).bin]
 
-pprint.pprint(Multipliers.karatsuba_multiply(5, 3, 4))
+
+#pprint.pprint(Multipliers.karatsuba_multiply(5, 3, 4))
+#pprint.pprint(binary_multiply([1, 0, 1], [1, 1]))
 
 
+
+# for 10 bits, starting at 1 bit:
+#   for 500 iterations per bit length:
+#       generate and add a random k-bit number to 2 output lists.
+#
+#   for each iteration:
+#       record the time it takes to multiply all of these numbers.
+#       add them to a sum
+#   divide the sum by total iterations to get the average for this bit length. save the output bit length.
+
+def test_normal_ks():
+    ks_normal_time = []
+    list_of_nums_1_bin = []
+    list_of_nums_1_int = []
+    list_of_nums_2_bin = []
+    list_of_nums_2_int = []
+    for x in range (1, 32):
+
+        for i in range (500):
+
+            list_of_nums_1_int.append(int(random.getrandbits(x)))
+            list_of_nums_2_int.append(int(random.getrandbits(x)))
         
+            #list_of_nums_1_bin.append([int(i) for i in bin(random.getrandbits(x))[2:]])
+            #list_of_nums_2_bin.append([int(i) for i in bin(random.getrandbits(x))[2:]])
+
+        sum = 0
+        for i in range(len(list_of_nums_1_int)):
+            start = timer()
+            Multipliers.karatsuba_multiply(list_of_nums_1_int[i], list_of_nums_2_int[i], x + 1)
+            end = timer()
+            sum += end - start
+
+        sum /= 500
+        ks_normal_time.append(sum)
+        list_of_nums_1_int = []
+        list_of_nums_2_int = []
+    
+    return ks_normal_time
+
+def test_gradeschool():
+    gs_normal_time = []
+    list_of_nums_1_bin = []
+    list_of_nums_1_int = []
+    list_of_nums_2_bin = []
+    list_of_nums_2_int = []
+    for x in range (1, 32):
+
+        for i in range (500):
+
+            list_of_nums_1_bin.append([int(i) for i in bin(random.getrandbits(x))[2:]])
+            list_of_nums_2_bin.append([int(i) for i in bin(random.getrandbits(x))[2:]])
+
+        sum = 0
+        for i in range(len(list_of_nums_1_bin)):
+            start = timer()
+            binary_multiply(list_of_nums_1_bin[i], list_of_nums_2_bin[i])
+            end = timer()
+            sum += end - start
+
+        sum /= 500
+        gs_normal_time.append(sum)
+        list_of_nums_1_bin = []
+        list_of_nums_2_bin = []
+    
+    return gs_normal_time
+     
+output_list = test_normal_ks()
+for i in range(len(output_list)):
+    print(output_list[i])
